@@ -10,6 +10,12 @@ import textwrap
 import qrcode
 import time
 import os
+import configparser
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+base_path = os.path.dirname(os.path.abspath(__file__))
 
 # Função para buscar o arquivo Excel contendo a planilha
 def buscar():
@@ -41,14 +47,14 @@ def generate_qr_code(qrcode_data, lugar):
     qr.make(fit=True)
     qr_img = qr.make_image(fill_color="black", back_color="white")
 
-    img_base = 'C:/Users/julio.matias/GeradordePDFEquipeDarioRJ/qrcode.png'
-    imagem_base = PIL.Image.open(img_base).convert("RGB")
+    img_base_path = os.path.join(base_path, config.get('Paths', 'img_base'))
+    imagem_base = PIL.Image.open(img_base_path  ).convert("RGB")
 
     x = 30 #42
     y = 54 #62
     imagem_base.paste(qr_img, (x, y))
 
-    draw = ImageDraw.Draw(imagem_base)
+    draw = PIL.ImageDraw.Draw(imagem_base)
     font = ImageFont.load_default()
 
     # Desenhar o texto centralizado abaixo do QR code com quebra de linha
@@ -71,8 +77,8 @@ def generate_qr_code(qrcode_data, lugar):
     # Ajustar a posição y para centralizar o texto verticalmente
     text_y = y + qr_img.size[1] + (total_text_height - text_height) // 2
 
-    img_folder = 'C:/Users/julio.matias/GeradordePDFEquipeDarioRJ/QRCode_Imagens'
-    img_path = os.path.join(img_folder, f"{lugar}_QRCODE.jpg")
+    img_folder_path = os.path.join(base_path, config.get('Paths', 'img_folder'))
+    img_path = os.path.join(img_folder_path, f"{lugar}_QRCODE.jpg")
     try:
         imagem_base.save(img_path)
     except OSError as e:
@@ -91,8 +97,8 @@ def generate_imagens(planilha):
 
 def abrir_xnviewmp_com_pasta(pasta):
     try:
-        caminho_xnviewmp = "C:/Users/julio.matias/GeradordePDFEquipeDarioRJ/xnViewMP/xnviewmp.exe"
-        comando = [caminho_xnviewmp, pasta]
+        xnviewmp_path = os.path.join(base_path, config.get('Paths', 'xnviewmp_path'))
+        comando = [xnviewmp_path, pasta]
         subprocess.Popen(comando)
         print("xnviewmp aberto com sucesso.")
     except Exception as e:
@@ -100,8 +106,8 @@ def abrir_xnviewmp_com_pasta(pasta):
 
 def abrir_xnviewmp_com_pasta_selecao_automatica(pasta):
     try:
-        caminho_xnviewmp = "C:/Users/julio.matias/GeradordePDFEquipeDarioRJ/xnViewMP/xnviewmp.exe"
-        comando = [caminho_xnviewmp, pasta]
+        xnviewmp_path = os.path.join(base_path, config.get('Paths', 'xnviewmp_path'))
+        comando = [xnviewmp_path, pasta]
         subprocess.Popen(comando)  # Usar Popen em vez de run
         print("xnviewmp aberto com sucesso.")
         # Aguardar um breve atraso antes de continuar
@@ -124,7 +130,7 @@ def gerar():
     planilha = filtrar_por_nivel(planilha, nivel_escolhido)
     texto_resposta.config(text="Gerando QR codes...")  # Mensagem de status
     janela.update()  # Atualizar a interface
-    pasta_dos_qr_codes = 'C:/Users/julio.matias/GeradordePDFEquipeDarioRJ/QRCode_Imagens'
+    pasta_dos_qr_codes = os.path.join(base_path, config.get('Paths', 'img_folder'))
 
     if  var_selecao_automatica.get(): # Verificar a opção selecionada pelo usuário
         abrir_xnviewmp_com_pasta_selecao_automatica(pasta_dos_qr_codes)
@@ -143,8 +149,8 @@ def main():
 janela = Tk()
 janela.title("GPS Vista - Funcionalidade")
 janela.geometry("600x200")
-img_f= 'C:/Users/julio.matias/GeradordePDFEquipeDarioRJ/Visual.png'
-figma_image = PIL.Image.open(img_f)
+img_f_path = os.path.join(base_path, config.get('Paths', 'img_folder_visual'))
+figma_image = PIL.Image.open(img_f_path)
 figma = ImageTk.PhotoImage(figma_image)
 
 # Variável global para armazenar a opção de seleção automática
